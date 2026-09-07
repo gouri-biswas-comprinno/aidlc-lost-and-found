@@ -34,4 +34,4 @@ Approved and completed. The project owner approved Unit 1 after successful manua
 
 ## Workflow Position
 
-Unit 1 is complete. Unit 2 is not started and requires a separate explicit instruction after the project owner confirms the GitHub push.
+Unit 1 is complete. Units 2 through 4 were subsequently completed and approved. Unit 5 is the final documentation unit.

@@ -268,4 +268,4 @@ With the existing backend running at `http://localhost:5000`:
 
 ## Status
 
-Unit 2 implementation and focused verification are complete. The unit is waiting at the AI-DLC approval gate. Unit 3 has not started.
+Unit 2 implementation and focused verification are complete and approved. Units 3 and 4 were subsequently completed and approved. Unit 5 is the final documentation unit.

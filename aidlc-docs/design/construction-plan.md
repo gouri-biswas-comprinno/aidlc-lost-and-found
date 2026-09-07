@@ -22,9 +22,9 @@ Add the shared report form for lost and found creation and editing, including cl
 
 Add report details, resolve action, delete confirmation, and navigation back to the list. Validate the complete lifecycle.
 
-## Unit 5: Integration Verification and Documentation
+## Unit 5: Final Documentation
 
-Connect local client and server configuration, verify the end-to-end workflow against MongoDB Atlas, add README setup instructions, and run final build/test checks.
+Document the completed application, actual architecture, API contract, folder structure, local setup, completed construction units, verification status, and future improvements. This final unit is documentation-only; it does not change application code, configuration, or database data.
 
 ## Construction Rules
 
