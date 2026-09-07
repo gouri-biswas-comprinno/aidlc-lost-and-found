@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Navigation from './components/Navigation.jsx';
+import ReportDetails from './components/ReportDetails.jsx';
 import ReportForm from './components/ReportForm.jsx';
 import ReportFilters from './components/ReportFilters.jsx';
 import ReportList from './components/ReportList.jsx';
@@ -20,6 +21,7 @@ export default function App() {
   const [view, setView] = useState('list');
   const [formType, setFormType] = useState('lost');
   const [editingReportId, setEditingReportId] = useState('');
+  const [selectedReportId, setSelectedReportId] = useState('');
   const [notice, setNotice] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
 
@@ -60,6 +62,27 @@ export default function App() {
     setView('form');
   }
 
+  function openDetails(id) {
+    setSelectedReportId(id);
+    setNotice('');
+    setView('details');
+  }
+
+  function handleDetailsBack() {
+    setView('list');
+    setRefreshKey((current) => current + 1);
+  }
+
+  function handleDetailsChanged() {
+    setRefreshKey((current) => current + 1);
+  }
+
+  function handleReportDeleted(message) {
+    setNotice(message);
+    setView('list');
+    setRefreshKey((current) => current + 1);
+  }
+
   function handleFormSuccess(_report, message) {
     setNotice(message);
     setView('list');
@@ -88,6 +111,15 @@ export default function App() {
           <button className="secondary-button" type="button" onClick={() => openCreateForm('found')}>Create found report</button>
         </div>}
         {notice && view === 'list' && <p className="success-message" role="status">{notice}</p>}
+        {view === 'details' && (
+          <ReportDetails
+            reportId={selectedReportId}
+            onBack={handleDetailsBack}
+            onEdit={openEditForm}
+            onChanged={handleDetailsChanged}
+            onDeleted={handleReportDeleted}
+          />
+        )}
         {view === 'form' && (
           <ReportForm
             reportId={editingReportId}
@@ -108,7 +140,7 @@ export default function App() {
           </div>
           {!loading && !error && <span>{reports.length} {reports.length === 1 ? 'report' : 'reports'}</span>}
         </div>}
-        {view === 'list' && <ReportList reports={reports} loading={loading} error={error} onEdit={openEditForm} />}
+        {view === 'list' && <ReportList reports={reports} loading={loading} error={error} onEdit={openEditForm} onView={openDetails} />}
       </main>
       <footer>Found &amp; Filed <span>•</span> Reports stay visible until marked resolved.</footer>
     </div>

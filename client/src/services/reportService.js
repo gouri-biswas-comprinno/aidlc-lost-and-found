@@ -48,3 +48,15 @@ export function updateReport(id, report) {
     body: JSON.stringify(report)
   });
 }
+
+export function resolveReport(id) {
+  return request(`/reports/${id}/resolve`, {
+    method: 'PATCH'
+  });
+}
+
+export function deleteReport(id) {
+  return request(`/reports/${id}`, {
+    method: 'DELETE'
+  });
+}

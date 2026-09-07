@@ -297,4 +297,16 @@ Verified after Unit 3 changes:
 
 ## Status
 
-Unit 3 implementation and focused verification are complete. The unit is waiting at the AI-DLC approval gate. Unit 4 has not started.
+Unit 3 implementation and focused verification are complete.
+
+## Approval
+
+- Unit: Unit 3 - Create and Edit Report Workflow
+- Decision: Approved and completed
+- Approved by: Project owner
+- Date: 2026-09-07
+- GitHub actions: Performed by the project owner; none performed by the assistant.
+
+## Workflow Position
+
+Unit 3 is complete. Unit 4 is now the active construction unit.
