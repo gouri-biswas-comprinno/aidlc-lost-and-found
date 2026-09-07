@@ -1,6 +1,6 @@
 import ReportCard from './ReportCard.jsx';
 
-export default function ReportList({ reports, loading, error }) {
+export default function ReportList({ reports, loading, error, onEdit }) {
   if (loading) {
     return <div className="feedback-panel" role="status">Loading reports...</div>;
   }
@@ -15,7 +15,7 @@ export default function ReportList({ reports, loading, error }) {
 
   return (
     <section className="report-list" aria-label="Lost-and-found reports">
-      {reports.map((report) => <ReportCard key={report.id} report={report} />)}
+      {reports.map((report) => <ReportCard key={report.id} report={report} onEdit={onEdit} />)}
     </section>
   );
 }

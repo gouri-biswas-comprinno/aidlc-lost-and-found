@@ -6,7 +6,7 @@ function formatDate(date) {
   }).format(new Date(date));
 }
 
-export default function ReportCard({ report }) {
+export default function ReportCard({ report, onEdit }) {
   const typeLabel = report.type === 'lost' ? 'Lost item' : 'Found item';
 
   return (
@@ -31,6 +31,9 @@ export default function ReportCard({ report }) {
           <dd>{formatDate(report.date)}</dd>
         </div>
       </dl>
+      <button className="card-action" type="button" onClick={() => onEdit(report.id)}>
+        Edit report
+      </button>
     </article>
   );
 }
