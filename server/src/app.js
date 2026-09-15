@@ -14,7 +14,7 @@ export function createApp({ reportModel = Report, userModel = User, blacklistMod
 
   app.get('/api/health', (request, response) => response.json({ status: 'ok' }));
   app.use('/api/auth', createAuthRoutes(userModel, { ...jwtOptions, blacklistModel }));
-  app.use('/api/reports', createReportRoutes(reportModel));
+  app.use('/api/reports', createReportRoutes(reportModel, { ...jwtOptions, blacklistModel }));
   app.use(notFoundHandler);
   app.use(errorHandler);
 
