@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
+import AuthPanel from './components/AuthPanel.jsx';
 import Navigation from './components/Navigation.jsx';
 import ReportDetails from './components/ReportDetails.jsx';
 import ReportForm from './components/ReportForm.jsx';
 import ReportFilters from './components/ReportFilters.jsx';
 import ReportList from './components/ReportList.jsx';
+import { clearStoredAuth, getStoredAuth, logout } from './services/authService.js';
 import { getReports } from './services/reportService.js';
 
 const initialFilters = {
@@ -24,6 +26,8 @@ export default function App() {
   const [selectedReportId, setSelectedReportId] = useState('');
   const [notice, setNotice] = useState('');
   const [refreshKey, setRefreshKey] = useState(0);
+  const [auth, setAuth] = useState(getStoredAuth);
+  const [authMode, setAuthMode] = useState('login');
 
   useEffect(() => {
     let ignoreResponse = false;
@@ -89,10 +93,42 @@ export default function App() {
     setRefreshKey((current) => current + 1);
   }
 
+  function openAuth(mode) {
+    setAuthMode(mode);
+    setNotice('');
+    setView('auth');
+  }
+
+  function handleAuthenticated(authResponse) {
+    setAuth(authResponse);
+    setNotice('You are now signed in.');
+    setView('list');
+  }
+
+  async function handleLogout() {
+    try {
+      await logout();
+      clearStoredAuth();
+      setAuth(null);
+      setNotice('You have been logged out.');
+      setView('list');
+    } catch (requestError) {
+      setNotice(requestError.message);
+    }
+  }
+
   return (
     <div className="app-shell" id="reports">
-      <Navigation reportCount={reports.length} onCreate={openCreateForm} />
+      <Navigation
+        reportCount={reports.length}
+        user={auth?.user}
+        onCreate={openCreateForm}
+        onLogin={() => openAuth('login')}
+        onSignup={() => openAuth('signup')}
+        onLogout={handleLogout}
+      />
       <main>
+        {view === 'auth' && <AuthPanel mode={authMode} onModeChange={(nextMode) => nextMode === 'list' ? setView('list') : setAuthMode(nextMode)} onAuthenticated={handleAuthenticated} />}
         {view === 'list' && <section className="intro-section">
           <div>
             <p className="eyebrow">A shared record for misplaced things</p>
