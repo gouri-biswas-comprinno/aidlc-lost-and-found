@@ -8,7 +8,14 @@ function serializeUser(user) {
   return { ...safeUser, id: String(_id) };
 }
 
-export function createAuthController(User, { jwtSecret = process.env.JWT_SECRET, jwtExpiresIn = process.env.JWT_EXPIRES_IN } = {}) {
+export function createAuthController(
+  User,
+  {
+    jwtSecret = process.env.JWT_SECRET,
+    jwtExpiresIn = process.env.JWT_EXPIRES_IN,
+    blacklistModel
+  } = {}
+) {
   return {
     signup: async (request, response, next) => {
       try {
@@ -59,6 +66,21 @@ export function createAuthController(User, { jwtSecret = process.env.JWT_SECRET,
         const token = jwt.sign({ sub: String(user._id) }, jwtSecret, { expiresIn: jwtExpiresIn });
         return response.json({ token, user: serializeUser(user) });
       } catch (error) {
+        return next(error);
+      }
+    },
+
+    logout: async (request, response, next) => {
+      try {
+        await blacklistModel.create({
+          token: request.authToken,
+          expiresAt: request.authTokenExpiresAt
+        });
+        return response.json({ message: 'Logout successful.' });
+      } catch (error) {
+        if (error.code === 11000) {
+          return response.json({ message: 'Logout successful.' });
+        }
         return next(error);
       }
     }

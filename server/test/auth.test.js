@@ -24,6 +24,26 @@ function createFakeUserModel() {
   };
 }
 
+function createFakeBlacklistModel() {
+  const records = [];
+
+  return {
+    records,
+    findOne({ token }) {
+      return { lean: async () => records.find((record) => record.token === token) || null };
+    },
+    create(value) {
+      if (records.some((record) => record.token === value.token)) {
+        const error = new Error('Duplicate token.');
+        error.code = 11000;
+        return Promise.reject(error);
+      }
+      records.push(value);
+      return Promise.resolve(value);
+    }
+  };
+}
+
 test('signs up a user with a hashed password and safe response data', async () => {
   const userModel = createFakeUserModel();
   const response = await request(createApp({ userModel }))
@@ -119,4 +139,59 @@ test('rejects malformed login input before lookup', async () => {
   assert.equal(response.body.message, 'Login data is invalid.');
   assert.ok(response.body.errors.email);
   assert.ok(response.body.errors.password);
+});
+
+test('logs out an authenticated token without returning the token', async () => {
+  const userModel = createFakeUserModel();
+  const blacklistModel = createFakeBlacklistModel();
+  const app = createApp({ userModel, blacklistModel, jwtOptions });
+  const login = await request(app)
+    .post('/api/auth/signup')
+    .send({ name: 'Alex Example', email: 'user@example.com', password: 'secure-pass' });
+  assert.equal(login.status, 201);
+
+  const token = jwt.sign({ sub: firstId }, jwtOptions.jwtSecret, { expiresIn: '1h' });
+  const response = await request(app)
+    .post('/api/auth/logout')
+    .set('Authorization', `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.message, 'Logout successful.');
+  assert.equal(response.body.token, undefined);
+  assert.equal(blacklistModel.records.length, 1);
+  assert.equal(blacklistModel.records[0].token, token);
+  assert.ok(blacklistModel.records[0].expiresAt instanceof Date);
+});
+
+test('rejects a blacklisted token while accepting a valid non-blacklisted token', async () => {
+  const blacklistModel = createFakeBlacklistModel();
+  const app = createApp({ blacklistModel, jwtOptions });
+  const loggedOutToken = jwt.sign({ sub: firstId }, jwtOptions.jwtSecret, { expiresIn: '1h' });
+  await blacklistModel.create({ token: loggedOutToken, expiresAt: new Date(Date.now() + 60_000) });
+
+  const rejected = await request(app)
+    .post('/api/auth/logout')
+    .set('Authorization', `Bearer ${loggedOutToken}`);
+  assert.equal(rejected.status, 401);
+  assert.equal(rejected.body.message, 'Token is no longer valid.');
+
+  const validToken = jwt.sign({ sub: firstId + '2' }, jwtOptions.jwtSecret, { expiresIn: '1h' });
+  const accepted = await request(app)
+    .post('/api/auth/logout')
+    .set('Authorization', `Bearer ${validToken}`);
+  assert.equal(accepted.status, 200);
+});
+
+test('does not reject a token for an expired blacklist record', async () => {
+  const blacklistModel = createFakeBlacklistModel();
+  const app = createApp({ blacklistModel, jwtOptions });
+  const token = jwt.sign({ sub: firstId }, jwtOptions.jwtSecret, { expiresIn: '1h' });
+  await blacklistModel.create({ token, expiresAt: new Date(Date.now() - 60_000) });
+
+  const response = await request(app)
+    .post('/api/auth/logout')
+    .set('Authorization', `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.message, 'Logout successful.');
 });
